@@ -5465,11 +5465,9 @@ const throttleShapeEffect = <A, E, R, E2, R2>(
     }))
 
 /**
- * Delays the arrays of this stream according to the given bandwidth
- * parameters using the token bucket algorithm. Allows for burst in the
- * processing of elements by allowing the token bucket to accumulate tokens up
- * to a `units + burst` threshold. The weight of each array is determined by
- * the `cost` function.
+ * Delays the arrays of this stream using a token bucket and a per-array cost.
+ * Allows bursts by letting the bucket accumulate up to a `units + burst`
+ * threshold. The weight of each array is determined by the `cost` function.
  *
  * If using the "enforce" strategy, arrays that do not meet the bandwidth
  * constraints are dropped. If using the "shape" strategy, arrays are delayed
@@ -5479,9 +5477,8 @@ const throttleShapeEffect = <A, E, R, E2, R2>(
  *
  * @example
  * ```ts
- * import { Effect, Schedule, Stream } from "effect"
+ * import { Console, Effect, Schedule, Stream } from "effect"
  *
- * // Rate limiting a stream to 1 element per 100ms using array length as cost
  * const stream = Stream.fromSchedule(Schedule.spaced("50 millis")).pipe(
  *   Stream.take(6),
  *   Stream.throttle({
@@ -5492,13 +5489,15 @@ const throttleShapeEffect = <A, E, R, E2, R2>(
  *   })
  * )
  *
- * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
- * // Output: [0, 1, 2, 3, 4, 5]
- * // Elements are emitted respecting the bandwidth constraints
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ *   // Output: [ 0, 1, 2, 3, 4, 5 ]
+ * })
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const throttle: {
   <A>(options: {
