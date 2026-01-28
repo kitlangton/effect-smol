@@ -3242,8 +3242,29 @@ export const raceAll = <S extends ReadonlyArray<Stream<any, any, any>>>(
   ))
 
 /**
+ * Returns a stream that mirrors the first upstream to emit an item.
+ * As soon as one stream emits, the other is interrupted and failures propagate.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Stream } from "effect"
+ *
+ * const stream = Stream.race(
+ *   Stream.make(0, 1, 2),
+ *   Stream.fromSchedule(Schedule.spaced("1 second"))
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 0, 1, 2 ]
+ * ```
+ *
  * @since 3.7.0
- * @category racing
+ * @category Racing
  */
 export const race: {
   <AR, ER, RR>(
