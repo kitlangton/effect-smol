@@ -2564,14 +2564,30 @@ export const cross: {
 ): Stream<[AL, AR], EL | ER, RL | RR> => crossWith(left, right, (l, r) => [l, r]))
 
 /**
- * Composes this stream with the specified stream to create a cartesian
- * product of elements with a specified function. The `right` stream would be
- * run multiple times, for every element in the `left` stream.
+ * Creates a cartesian product of elements from two streams using a function.
+ *
+ * The `right` stream is rerun for every element in the `left` stream.
  *
  * See also `Stream.zipWith` for the more common point-wise variant.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const left = Stream.make(1, 2)
+ *   const right = Stream.make("a", "b")
+ *   const combined = Stream.crossWith(left, right, (n, s) => `${n}-${s}`)
+ *   const result = yield* Stream.runCollect(combined)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "1-a", "1-b", "2-a", "2-b" ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Zipping
  */
 export const crossWith: {
   <AR, ER, RR, AL, A>(
