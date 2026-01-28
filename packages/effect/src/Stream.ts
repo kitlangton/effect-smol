@@ -4605,7 +4605,7 @@ export const dropWhile: {
 
 /**
  * Drops all elements of the stream for as long as the specified predicate
- * produces an effect that evalutates to `true`
+ * produces an effect that evaluates to `true`
  *
  * @since 2.0.0
  * @category utils
