@@ -2387,10 +2387,27 @@ export const concat: {
 )
 
 /**
- * Emits the provided chunk before emitting any other value.
+ * Prepends the values from the provided iterable before the stream's elements.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(3, 4).pipe(
+ *     Stream.prepend([1, 2]),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(values)
+ *   // Output: [ 1, 2, 3, 4 ]
+ * })
+ *
+ * Effect.runPromise(program)
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const prepend: {
   <B>(values: Iterable<B>): <A, E, R>(self: Stream<A, E, R>) => Stream<B | A, E, R>
