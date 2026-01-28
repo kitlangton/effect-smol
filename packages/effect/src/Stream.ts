@@ -5205,7 +5205,7 @@ export const scan: {
   }))
 
 /**
- * Effectfully accumulates state while emitting each intermediate result, starting with the initial value.
+ * Effectfully accumulates state and emits the initial state plus each accumulated state.
  *
  * @example
  * ```ts
