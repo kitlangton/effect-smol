@@ -2723,25 +2723,28 @@ export const zipWithArray: {
 
 /**
  * Zips this stream with another point-wise and emits tuples of elements from
- * both streams.
- *
- * The new stream will end when one of the sides ends.
+ * both streams. The new stream ends when either stream ends.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream1 = Stream.make(1, 2, 3)
  * const stream2 = Stream.make("a", "b", "c")
  *
  * const zipped = Stream.zip(stream1, stream2)
  *
- * Effect.runPromise(Stream.runCollect(zipped)).then(console.log)
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(zipped)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
  * // Output: [[1, "a"], [2, "b"], [3, "c"]]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zip: {
   <A2, E2, R2>(that: Stream<A2, E2, R2>): <A, E, R>(self: Stream<A, E, R>) => Stream<[A, A2], E2 | E, R2 | R>
