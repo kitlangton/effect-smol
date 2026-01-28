@@ -5537,6 +5537,26 @@ export const throttle: {
 )
 
 /**
+ * Partitions the stream into non-empty arrays of the specified size.
+ *
+ * The final array may be smaller if there are not enough elements to fill it.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const grouped = yield* Stream.range(1, 8).pipe(
+ *     Stream.grouped(3),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(grouped)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 ] ]
+ * ```
+ *
  * @since 2.0.0
  * @category Grouping
  */
