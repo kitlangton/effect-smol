@@ -3141,9 +3141,8 @@ export const zipLatest: {
 )
 
 /**
- * Zips the two streams so that when a value is emitted by either of the two
- * streams, it is combined with the latest value from the other stream using
- * the provided function to produce a result.
+ * Combines the latest values from both streams whenever either emits, using
+ * the provided function.
  *
  * Note: tracking the latest value is done on a per-array basis. That means
  * that emitted elements that are not the last value in arrays will never be
@@ -3151,43 +3150,25 @@ export const zipLatest: {
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const numbers = Stream.make(1, 2, 3)
- * const multipliers = Stream.make(10, 20, 30)
+ * Effect.gen(function*() {
+ *   const result = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.rechunk(1),
+ *     Stream.zipLatestWith(
+ *       Stream.make(10, 20).pipe(Stream.rechunk(1)),
+ *       (n, m) => n + m
+ *     ),
+ *     Stream.runCollect
+ *   )
  *
- * const stream = Stream.zipLatestWith(
- *   numbers,
- *   multipliers,
- *   (n: number, m: number) => n * m
- * )
- *
- * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
- * // Combines values using multiplication as they arrive
- * ```
- *
- * @example
- * ```ts
- * import { Effect, Stream } from "effect"
- *
- * // Combining first and last names
- * const firstNames = Stream.make("Alice", "Bob", "Charlie")
- * const lastNames = Stream.make("Smith", "Jones")
- *
- * const fullNames = Stream.zipLatestWith(
- *   firstNames,
- *   lastNames,
- *   (first: string, last: string) => `${first} ${last}`
- * )
- *
- * Effect.runPromise(Stream.runCollect(fullNames)).then((result) =>
- *   console.log(result)
- * )
- * // ["Alice Smith", "Bob Smith", "Bob Jones", "Charlie Jones"]
+ *   yield* Console.log(result)
+ *   // Output: [ 11, 12, 22, 23 ]
+ * })
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipLatestWith: {
   <AR, ER, RR, AL, A>(
