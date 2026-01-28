@@ -4498,20 +4498,26 @@ export const takeWhileEffect: {
     ), { excludeLast: true }))
 
 /**
- * Drops the specified number of elements from this stream.
+ * Drops the first `n` elements from this stream.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream = Stream.make(1, 2, 3, 4, 5)
  * const result = Stream.drop(stream, 2)
  *
- * Effect.runPromise(Stream.runCollect(result)).then(console.log)
+ * const program = Effect.gen(function*() {
+ *   const items = yield* Stream.runCollect(result)
+ *   yield* Console.log(items)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 3, 4, 5 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const drop: {
   (n: number): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
