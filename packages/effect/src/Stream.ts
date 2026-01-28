@@ -4748,8 +4748,23 @@ export const rechunk: {
 /**
  * Emits a sliding window of `n` elements.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream, pipe } from "effect"
+ *
+ * Effect.gen(function*() {
+ *   const result = yield* pipe(
+ *     Stream.make(1, 2, 3, 4, 5),
+ *     Stream.sliding(2),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ * // Output: [ [1, 2], [2, 3], [3, 4], [4, 5] ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Grouping
  */
 export const sliding: {
   (chunkSize: number): <A, E, R>(self: Stream<A, E, R>) => Stream<Arr.NonEmptyReadonlyArray<A>, E, R>
