@@ -3760,14 +3760,34 @@ const catch_: {
 
 export {
   /**
+   * Switches over to the stream produced by the provided function if this one fails.
+   *
    * **Previously Known As**
    *
    * This API replaces the following from Effect 3.x:
    *
    * - `Stream.catchAll`
    *
+   * @example
+   * ```ts
+   * import { Console, Effect, Stream } from "effect"
+   *
+   * const stream = Stream.make(1, 2).pipe(
+   *   Stream.concat(Stream.fail("Oops!")),
+   *   Stream.catch(() => Stream.make(999))
+   * )
+   *
+   * const program = Effect.gen(function*() {
+   *   const values = yield* Stream.runCollect(stream)
+   *   yield* Console.log(values)
+   * })
+   *
+   * Effect.runPromise(program)
+   * // Output: [ 1, 2, 999 ]
+   * ```
+   *
    * @since 4.0.0
-   * @category Error handling
+   * @category Error Handling
    */
   catch_ as catch
 }
