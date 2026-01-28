@@ -5119,8 +5119,32 @@ export const mapAccumEffect: {
   ))
 
 /**
+ * Statefully and effectfully maps over chunks of this stream to emit new values.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const totals = yield* Stream.make(1, 2, 3, 4).pipe(
+ *     Stream.rechunk(2),
+ *     Stream.mapAccumArrayEffect(() => 0, (total, chunk) =>
+ *       Effect.gen(function*() {
+ *         const next = chunk.reduce((sum, value) => sum + value, total)
+ *         return [next, [next]] as const
+ *       })
+ *     ),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(totals)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 3, 10 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const mapAccumArrayEffect: {
   <S, A, B, E2, R2>(
