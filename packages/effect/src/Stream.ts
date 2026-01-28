@@ -5549,8 +5549,24 @@ export const grouped: {
 )
 
 /**
- * Partitions the stream with the specified `chunkSize` or until the specified
- * `duration` has passed, whichever is satisfied first.
+ * Partitions the stream into arrays, emitting when the chunk size is reached
+ * or the duration passes.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.groupedWithin(2, "5 seconds"),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, 2 ], [ 3 ] ]
+ * ```
  *
  * @since 2.0.0
  * @category Grouping
