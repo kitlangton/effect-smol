@@ -2940,17 +2940,21 @@ export const zipWithNext = <A, E, R>(self: Stream<A, E, R>): Stream<[A, Option.O
   })
 
 /**
- * Zips each element with the previous element. Initially accompanied by
- * `None`.
+ * Zips each element with its previous element, starting with `None`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream = Stream.zipWithPrevious(Stream.make(1, 2, 3, 4))
  *
- * Effect.runPromise(Stream.runCollect(stream)).then((chunk) => console.log(chunk))
- * // [
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [
  * //   [ { _id: 'Option', _tag: 'None' }, 1 ],
  * //   [ { _id: 'Option', _tag: 'Some', value: 1 }, 2 ],
  * //   [ { _id: 'Option', _tag: 'Some', value: 2 }, 3 ],
@@ -2959,7 +2963,7 @@ export const zipWithNext = <A, E, R>(self: Stream<A, E, R>): Stream<[A, Option.O
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipWithPrevious = <A, E, R>(self: Stream<A, E, R>): Stream<[Option.Option<A>, A], E, R> =>
   mapAccumArray(self, Option.none<A>, (acc, arr) => {
