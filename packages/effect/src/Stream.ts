@@ -2899,16 +2899,20 @@ export const zipFlatten: {
 export const zipWithIndex = <A, E, R>(self: Stream<A, E, R>): Stream<[A, number], E, R> => map(self, (a, i) => [a, i])
 
 /**
- * Zips each element with the next element if present.
+ * Zips each element with the next element, pairing the final element with
+ * `Option.none()`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream = Stream.zipWithNext(Stream.make(1, 2, 3, 4))
  *
- * Effect.runPromise(Stream.runCollect(stream)).then((chunk) => console.log(chunk))
- * // [
+ * Effect.runPromise(Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * }))
+ * // Output: [
  * //   [ 1, { _id: 'Option', _tag: 'Some', value: 2 } ],
  * //   [ 2, { _id: 'Option', _tag: 'Some', value: 3 } ],
  * //   [ 3, { _id: 'Option', _tag: 'Some', value: 4 } ],
@@ -2917,7 +2921,7 @@ export const zipWithIndex = <A, E, R>(self: Stream<A, E, R>): Stream<[A, number]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipWithNext = <A, E, R>(self: Stream<A, E, R>): Stream<[A, Option.Option<A>], E, R> =>
   mapAccumArray(self, Option.none<A>, (acc, arr) => {
