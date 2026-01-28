@@ -5309,10 +5309,9 @@ export const debounce: {
 
 /**
  * Delays the arrays of this stream according to the given bandwidth
- * parameters using the token bucket algorithm. Allows for burst in the
- * processing of elements by allowing the token bucket to accumulate tokens up
- * to a `units + burst` threshold. The weight of each array is determined by
- * the effectful `cost` function.
+ * parameters using the token bucket algorithm. Allows for burst processing by
+ * allowing the bucket to accumulate tokens up to a `units + burst` threshold.
+ * The weight of each array is determined by the effectful `cost` function.
  *
  * If using the "enforce" strategy, arrays that do not meet the bandwidth
  * constraints are dropped. If using the "shape" strategy, arrays are delayed
@@ -5322,13 +5321,11 @@ export const debounce: {
  *
  * @example
  * ```ts
- * import { Effect, Schedule, Stream } from "effect"
+ * import { Console, Effect, Schedule, Stream } from "effect"
  *
- * // Using the "shape" strategy to delay elements
  * const stream = Stream.fromSchedule(Schedule.spaced("50 millis")).pipe(
- *   Stream.take(10),
+ *   Stream.take(6),
  *   Stream.throttleEffect({
- *     // Cost function that returns an Effect
  *     cost: (arr) => Effect.succeed(arr.length),
  *     units: 1,
  *     duration: "100 millis",
@@ -5336,12 +5333,15 @@ export const debounce: {
  *   })
  * )
  *
- * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
- * // Elements are delayed to match the specified bandwidth
+ * Effect.runPromise(Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * }))
+ * // Output: [0, 1, 2, 3, 4, 5]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const throttleEffect: {
   <A, E2, R2>(options: {
