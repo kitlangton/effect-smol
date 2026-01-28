@@ -4098,21 +4098,27 @@ export const orElseSucceed: {
 ): Stream<A | A2, never, R> => catch_(self, (e) => succeed(f(e))))
 
 /**
- * Converts stream failures into fiber terminations, making them unrecoverable.
+ * Turns typed failures into defects, making the stream infallible.
  *
  * @example
  * ```ts
- * import { Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const failingStream = Stream.fail("This will become a defect")
- * const stream = Stream.orDie(failingStream)
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.orDie,
+ *     Stream.runCollect
+ *   )
  *
- * // This will terminate the fiber with a defect instead of a recoverable error
- * // Effect.runPromise(Stream.runCollect(stream)) // Would throw
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
  * ```
  *
  * @since 2.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const orDie = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> => fromChannel(Channel.orDie(self.channel))
 
