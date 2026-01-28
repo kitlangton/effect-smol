@@ -2796,26 +2796,26 @@ export const zipLeft: {
 )
 
 /**
- * Zips this stream with another point-wise, but keeps only the outputs of
- * the right stream.
- *
- * The new stream will end when one of the sides ends.
+ * Zips this stream with another point-wise, keeping only right values and ending when either stream ends.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream1 = Stream.make(1, 2)
  * const stream2 = Stream.make("a", "b", "c", "d")
  *
- * const zipped = Stream.zipRight(stream1, stream2)
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.zipRight(stream1, stream2).pipe(Stream.runCollect)
+ *   yield* Console.log(result)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(zipped)).then(console.log)
+ * Effect.runPromise(program)
  * // Output: ["a", "b"]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipRight: {
   <AR, ER, RR>(right: Stream<AR, ER, RR>): <AL, EL, RL>(left: Stream<AL, EL, RL>) => Stream<AR, ER | EL, RR | RL>
