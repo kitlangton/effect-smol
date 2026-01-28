@@ -3564,13 +3564,32 @@ export const when: {
 })
 
 /**
- * Peels off enough material from the stream to construct a `Z` using the
- * provided `Sink` and then returns both the `Z` and the rest of the
- * `Stream` in a scope. Like all scoped values, the provided stream is
- * valid only within the scope.
+ * Runs a sink to peel off enough elements to produce a value and returns that
+ * value with the remaining stream in a scope.
+ *
+ * The returned stream is only valid within the scope.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Sink, Stream } from "effect"
+ *
+ * const stream = Stream.fromArrays([1, 2, 3], [4, 5, 6])
+ * const sink = Sink.take<number>(3)
+ *
+ * const program = Effect.scoped(
+ *   Effect.gen(function*() {
+ *     const [peeled, rest] = yield* Stream.peel(stream, sink)
+ *     const remaining = yield* Stream.runCollect(rest)
+ *     yield* Console.log([peeled, remaining])
+ *   })
+ * )
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [1, 2, 3], [4, 5, 6] ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Destructors
  */
 export const peel: {
   <A2, A, E2, R2>(
