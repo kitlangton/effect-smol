@@ -4106,10 +4106,27 @@ export const orDie = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> => fr
 export const ignore = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> => fromChannel(Channel.ignore(self.channel))
 
 /**
- * Ignore errors and convert them into an empty stream.
+ * Ignores the stream's failure cause, including defects, and ends the stream.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.make(1, 2).pipe(
+ *     Stream.concat(Stream.die(new Error("Boom"))),
+ *     Stream.ignoreCause
+ *   )
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ *   // Output: [ 1, 2 ]
+ * })
+ *
+ * Effect.runPromise(program)
+ * ```
  *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const ignoreCause = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> =>
   fromChannel(Channel.ignoreCause(self.channel))
