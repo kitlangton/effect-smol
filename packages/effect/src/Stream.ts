@@ -5537,6 +5537,28 @@ export const throttle: {
 )
 
 /**
+ * Groups adjacent elements by a key and emits tuples of the key with the non-empty group.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * Effect.gen(function*() {
+ *   const result = yield* Stream.fromIterable([
+ *     { code: 1, message: "A" },
+ *     { code: 1, message: "B" },
+ *     { code: 2, message: "C" },
+ *     { code: 1, message: "D" }
+ *   ]).pipe(
+ *     Stream.groupAdjacentBy((x) => x.code),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(result)
+ *   // Output: [ [ 1, [ { code: 1, message: "A" }, { code: 1, message: "B" } ] ], [ 2, [ { code: 2, message: "C" } ] ], [ 1, [ { code: 1, message: "D" } ] ] ]
+ * })
+ * ```
+ *
  * @since 2.0.0
  * @category Grouping
  */
