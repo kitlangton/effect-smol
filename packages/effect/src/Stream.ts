@@ -4155,15 +4155,44 @@ export const retry: {
 )
 
 /**
- * Apply an `ExecutionPlan` to the stream, which allows you to fallback to
- * different resources in case of failure.
+ * Apply an `ExecutionPlan` to a stream, retrying with step-provided resources
+ * until it succeeds or the plan is exhausted.
  *
- * If you have a stream that could fail with partial results, you can use
- * the `preventFallbackOnPartialStream` option to prevent contamination of
- * the final stream with partial results.
+ * By default, a failing step can fallback even after emitting elements; set
+ * `preventFallbackOnPartialStream` to fail instead of mixing partial output with
+ * a later fallback.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, ExecutionPlan, Layer, ServiceMap, Stream } from "effect"
+ *
+ * class Service extends ServiceMap.Service<Service>()("Service", {
+ *   make: Effect.succeed({
+ *     stream: Stream.fail("A") as Stream.Stream<number, string>
+ *   })
+ * }) {
+ *   static Bad = Layer.succeed(Service, Service.of({ stream: Stream.fail("A") }))
+ *   static Good = Layer.succeed(Service, Service.of({ stream: Stream.make(1, 2, 3) }))
+ * }
+ *
+ * const plan = ExecutionPlan.make(
+ *   { provide: Service.Bad },
+ *   { provide: Service.Good }
+ * )
+ *
+ * const stream = Stream.unwrap(Effect.map(Service.asEffect(), (_) => _.stream))
+ *
+ * const program = Effect.gen(function*() {
+ *   const items = yield* stream.pipe(Stream.withExecutionPlan(plan), Stream.runCollect)
+ *   yield* Console.log(items)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
  *
  * @since 3.16.0
- * @category Error handling
+ * @category Error Handling
  * @experimental
  */
 export const withExecutionPlan: {
