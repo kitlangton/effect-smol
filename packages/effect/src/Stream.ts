@@ -2755,26 +2755,29 @@ export const zip: {
 )
 
 /**
- * Zips this stream with another point-wise, but keeps only the outputs of
+ * Zips this stream with another point-wise and keeps only the values from
  * the left stream.
  *
- * The new stream will end when one of the sides ends.
+ * The resulting stream ends when either side ends.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const stream1 = Stream.make(1, 2, 3, 4)
  * const stream2 = Stream.make("a", "b")
  *
- * const zipped = Stream.zipLeft(stream1, stream2)
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.zipLeft(stream1, stream2).pipe(Stream.runCollect)
+ *   yield* Console.log(result)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(zipped)).then(console.log)
+ * Effect.runPromise(program)
  * // Output: [1, 2]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipLeft: {
   <AR, ER, RR>(right: Stream<AR, ER, RR>): <AL, EL, RL>(left: Stream<AL, EL, RL>) => Stream<AL, ER | EL, RR | RL>
