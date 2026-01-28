@@ -3870,8 +3870,37 @@ export const catchFilter: {
 ): Stream<A | A2, X | E2, R | R2> => fromChannel(Channel.catchFilter(toChannel(self), filter, (e) => f(e).channel)))
 
 /**
+ * Recovers from failures whose `_tag` matches the provided value by switching to
+ * the stream returned by `f`.
+ *
+ * **When to Use**
+ *
+ * Use `catchTag` when your error type is a tagged union with a readonly `_tag`
+ * field and you want to handle a specific error case.
+ *
+ * @example
+ * ```ts
+ * import { Console, Data, Effect, Stream } from "effect"
+ *
+ * class HttpError extends Data.TaggedError("HttpError")<{ message: string }> {}
+ *
+ * const stream = Stream.fail(new HttpError({ message: "timeout" }))
+ *
+ * const recovered = Stream.catchTag(stream, "HttpError", (error) =>
+ *   Stream.make(`Recovered: ${error.message}`)
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(recovered)
+ *   yield* Console.log(values)
+ *   // Output: [ "Recovered: timeout" ]
+ * })
+ *
+ * Effect.runPromise(program)
+ * ```
+ *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchTag: {
   <const K extends Tags<E> | Arr.NonEmptyReadonlyArray<Tags<E>>, E, A1, E1, R1>(
