@@ -2430,8 +2430,30 @@ export const merge: {
 )
 
 /**
+ * Merges this stream with a background effect, keeping the stream's elements.
+ *
+ * The effect runs concurrently, fails the stream if it fails, and is interrupted
+ * when the stream completes.
+ *
  * @since 4.0.0
- * @category utils
+ * @category Merging
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.mergeEffect(Console.log("side task")),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: side task
+ * // Output: [ 1, 2, 3 ]
+ * ```
  */
 export const mergeEffect: {
   <A2, E2, R2>(effect: Effect.Effect<A2, E2, R2>): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E2 | E, R2 | R>
