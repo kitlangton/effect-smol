@@ -2700,8 +2700,29 @@ export const prepend: {
 ): Stream<A | B, E, R> => concat(fromIterable(values), self))
 
 /**
+ * Merges two streams, emitting elements from both as they arrive.
+ *
+ * By default, the merged stream ends when both streams end. Use
+ * `haltStrategy` to change the termination behavior.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const fast = Stream.make(1, 2, 3)
+ * const slow = Stream.fromEffect(Effect.delay(Effect.succeed(4), "50 millis"))
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(Stream.merge(fast, slow))
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3, 4 ]
+ * ```
+ *
  * @since 2.0.0
- * @category merging
+ * @category Merging
  */
 export const merge: {
   <A2, E2, R2>(
