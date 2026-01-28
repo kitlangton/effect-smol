@@ -4916,11 +4916,11 @@ export const combine: {
   ))
 
 /**
- * Combines the elements from this stream and the specified stream by
- * repeatedly applying the function `f` to extract an array using both sides
- * and conceptually "offer" it to the destination stream. `f` can maintain
- * some internal state to control the combining process, with the initial
- * state being specified by `s`.
+ * Combines the arrays (chunks) from this stream and the specified stream by
+ * repeatedly applying the function `f` to extract an array using both sides and
+ * conceptually "offer" it to the destination stream. `f` can maintain some
+ * internal state to control the combining process, with the initial state
+ * being specified by `s`.
  *
  * **Previously Known As**
  *
@@ -4938,8 +4938,8 @@ export const combine: {
  *     () => true,
  *     (useLeft, pullLeft, pullRight) =>
  *       Effect.gen(function*() {
- *         const chunk = useLeft ? yield* pullLeft : yield* pullRight
- *         return [chunk, !useLeft] as const
+ *         const array = useLeft ? yield* pullLeft : yield* pullRight
+ *         return [array, !useLeft] as const
  *       })
  *   )
  * )
