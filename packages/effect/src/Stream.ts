@@ -4645,8 +4645,26 @@ export const dropWhileEffect: {
 /**
  * Drops the last specified number of elements from this stream.
  *
+ * Keeps the last `n` elements in memory to drop them on completion.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.dropRight(2),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const dropRight: {
   (n: number): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
