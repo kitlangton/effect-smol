@@ -4695,7 +4695,7 @@ export const chunks = <A, E, R>(self: Stream<A, E, R>): Stream<Arr.NonEmptyReado
 /**
  * Re-chunks the stream into arrays of the specified size, preserving element order.
  *
- * The chunk size is clamped to at least 1.
+ * The size is clamped to at least 1.
  *
  * @example
  * ```ts
