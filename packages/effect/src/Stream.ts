@@ -4041,8 +4041,26 @@ export const catchCauseFilter: {
   ))
 
 /**
+ * Switches to a fallback stream if this stream is empty.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.empty.pipe(
+ *     Stream.orElseIfEmpty(() => Stream.make(1, 2)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2 ]
+ * ```
+ *
  * @since 2.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const orElseIfEmpty: {
   <E, A2, E2, R2>(
