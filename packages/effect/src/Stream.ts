@@ -3719,14 +3719,37 @@ export const catchCause: {
   ))
 
 /**
+ * Runs an effect when the stream fails without changing its values or error,
+ * unless the tap effect itself fails.
+ *
  * **Previously Known As**
  *
  * This API replaces the following from Effect 3.x:
  *
  * - `Stream.tapErrorCause`
  *
+ * @example
+ * ```ts
+ * import { Cause, Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2).pipe(
+ *   Stream.concat(Stream.fail("boom")),
+ *   Stream.tapCause((cause) => Console.log(Cause.isFailure(cause))),
+ *   Stream.catch(() => Stream.succeed(0))
+ * )
+ *
+ * const program = Effect.gen(function* () {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: true
+ * // Output: [ 1, 2, 0 ]
+ * ```
+ *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const tapCause: {
   <E, A2, E2, R2>(
