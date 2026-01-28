@@ -5780,10 +5780,25 @@ export const groupAdjacentBy: {
     })))
 
 /**
- * Applies the Sink transducer to the stream and emits its outputs.
+ * Applies a sink transducer to the stream and emits each sink result.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Sink, Stream } from "effect"
+ *
+ * const program = Effect.gen(function* () {
+ *   const result = yield* Stream.make(1, 2, 3, 4).pipe(
+ *     Stream.transduce(Sink.take(2)),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(result)
+ *   // Output: [ [ 1, 2 ], [ 3, 4 ] ]
+ * })
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Aggregation
  */
 export const transduce = dual<
   <A2, A, E2, R2>(
