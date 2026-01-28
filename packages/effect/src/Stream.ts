@@ -3996,7 +3996,8 @@ export const mapError: {
 ): Stream<A, E2, R> => fromChannel(Channel.mapError(self.channel, f)))
 
 /**
- * Conditionally handles stream failures based on a predicate applied to the Cause.
+ * Recovers from stream failures by filtering the `Cause` and switching to a recovery stream.
+ * Non-matching causes are re-emitted as failures.
  *
  * **Previously Known As**
  *
@@ -4006,19 +4007,26 @@ export const mapError: {
  *
  * @example
  * ```ts
- * import { Cause, Stream } from "effect"
+ * import { Cause, Console, Effect, Stream } from "effect"
  *
- * const failingStream = Stream.fail("NetworkError")
+ * const program = Effect.gen(function*() {
+ *   const failingStream = Stream.fail("NetworkError")
+ *   const recovered = Stream.catchCauseFilter(
+ *     failingStream,
+ *     Cause.filterError,
+ *     (error) => Stream.make(`Recovered: ${error}`)
+ *   )
  *
- * const recovered = Stream.catchCauseFilter(
- *   failingStream,
- *   Cause.hasFail,
- *   (error, cause) => Stream.make("Recovered from network error")
- * )
+ *   const output = yield* Stream.runCollect(recovered)
+ *   yield* Console.log(output)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "Recovered: NetworkError" ]
  * ```
  *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchCauseFilter: {
   <E, EB, X extends Cause.Cause<any>, A2, E2, R2>(
