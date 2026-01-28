@@ -2844,23 +2844,26 @@ export const zipRight: {
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream1 = Stream.make(
- *   [1, "a"] as const,
- *   [2, "b"] as const,
- *   [3, "c"] as const
- * )
- * const stream2 = Stream.make("x", "y", "z")
+ * const program = Effect.gen(function*() {
+ *   const stream1 = Stream.make(
+ *     [1, "a"] as const,
+ *     [2, "b"] as const,
+ *     [3, "c"] as const
+ *   )
+ *   const stream2 = Stream.make("x", "y", "z")
+ *   const result = yield* Stream.zipFlatten(stream1, stream2).pipe(Stream.runCollect)
  *
- * const zipped = Stream.zipFlatten(stream1, stream2)
+ *   yield* Console.log(result)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(zipped)).then(console.log)
+ * Effect.runPromise(program)
  * // Output: [[1, "a", "x"], [2, "b", "y"], [3, "c", "z"]]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipFlatten: {
   <A2, E2, R2>(
