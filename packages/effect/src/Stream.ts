@@ -5067,8 +5067,29 @@ export const mapAccumArray: {
 const emptyArr = Arr.empty<never>()
 
 /**
+ * Statefully and effectfully maps over the elements of this stream to produce new elements.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.make(1, 1, 1).pipe(
+ *     Stream.mapAccumEffect(() => 0, (total, n) =>
+ *       Effect.succeed([total + n, [total + n]])
+ *     ),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const mapAccumEffect: {
   <S, A, B, E2, R2>(
