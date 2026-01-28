@@ -2663,18 +2663,19 @@ export const flattenTake = <A, E, E2, R>(self: Stream<Take.Take<A, E>, E2, R>): 
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream1 = Stream.make(1, 2, 3)
- * const stream2 = Stream.make(4, 5, 6)
+ * const stream = Stream.concat(Stream.make(1, 2, 3), Stream.make(4, 5, 6))
  *
- * const concatenated = Stream.concat(stream1, stream2)
- *
- * Effect.runPromise(Stream.runCollect(concatenated)).then(console.log)
+ * Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ * // Output: [ 1, 2, 3, 4, 5, 6 ]
  * ```
  *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const concat: {
   <A2, E2, R2>(that: Stream<A2, E2, R2>): <A, E, R>(self: Stream<A, E, R>) => Stream<A | A2, E | E2, R | R2>
