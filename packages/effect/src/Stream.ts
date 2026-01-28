@@ -2785,11 +2785,34 @@ export const mergeLeft: {
 )
 
 /**
- * Merges this stream and the specified stream together, discarding the values
- * from the left stream.
+ * Merges this stream and the specified stream together, emitting only the
+ * values from the right stream while the left stream runs for its effects.
+ *
+ * The merged stream ends when the right stream completes, interrupting the
+ * left stream. Failures from the left stream still fail the merged stream.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const left = Stream.make("left-1", "left-2").pipe(
+ *   Stream.tap(() => Effect.sync(() => undefined))
+ * )
+ * const right = Stream.make(1, 2)
+ *
+ * const merged = Stream.mergeRight(left, right)
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(merged)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Merging
  */
 export const mergeRight: {
   <AR, ER, RR>(right: Stream<AR, ER, RR>): <AL, EL, RL>(left: Stream<AL, EL, RL>) => Stream<AR, ER | EL, RR | RL>
