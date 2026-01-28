@@ -3287,6 +3287,27 @@ export const filterMap: {
 )
 
 /**
+ * Effectfully filters and maps elements in a single pass.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const filter = Filter.makeEffect((n: number) =>
+ *   Effect.succeed(n > 2 ? n + 1 : Filter.fail(n))
+ * )
+ *
+ * const stream = Stream.make(1, 2, 3, 4).pipe(Stream.filterMapEffect(filter))
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 4, 5 ]
+ * ```
+ *
  * @since 2.0.0
  * @category Filtering
  */
