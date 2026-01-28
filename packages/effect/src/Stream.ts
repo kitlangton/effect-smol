@@ -4285,23 +4285,26 @@ export const withExecutionPlan: {
   }))
 
 /**
- * Takes the specified number of elements from this stream.
+ * Takes the first `n` elements from this stream, returning `Stream.empty` when `n < 1`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5)
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.take(3),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
  *
- * const firstThree = stream.pipe(Stream.take(3))
- *
- * const program = firstThree.pipe(Stream.runCollect)
- *
- * Effect.runPromise(program).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const take: {
   (n: number): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
