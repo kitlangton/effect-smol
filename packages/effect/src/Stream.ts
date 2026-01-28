@@ -3639,7 +3639,9 @@ export const buffer: {
 
 /**
  * Allows a faster producer to progress independently of a slower consumer by
- * buffering up to `capacity` elements in a queue.
+ * buffering up to `capacity` chunks in a queue.
+ *
+ * This combinator preserves chunking and is best with power-of-2 capacities.
  *
  * **Previously Known As**
  *
@@ -3647,8 +3649,23 @@ export const buffer: {
  *
  * - `Stream.bufferChunks`
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.fromArrays([1, 2], [3, 4]).pipe(
+ *     Stream.bufferArray({ capacity: 2 }),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * // Output: [ 1, 2, 3, 4 ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const bufferArray: {
   (
