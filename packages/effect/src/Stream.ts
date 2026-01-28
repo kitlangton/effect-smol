@@ -4435,21 +4435,27 @@ export const takeUntilEffect: {
     })))
 
 /**
- * Takes all elements of the stream for as long as the specified predicate
- * evaluates to `true`.
+ * Takes the longest initial prefix of elements that satisfy the predicate.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5, 6)
- * const result = Stream.takeWhile(stream, (n) => n < 4)
+ * const stream = Stream.range(1, 5).pipe(
+ *   Stream.takeWhile((n) => n % 3 !== 0)
+ * )
  *
- * Effect.runPromise(Stream.runCollect(result)).then(console.log)
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const takeWhile: {
   <A, B extends A>(refinement: (a: NoInfer<A>, n: number) => a is B): <E, R>(self: Stream<A, E, R>) => Stream<B, E, R>
