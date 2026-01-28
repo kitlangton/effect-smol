@@ -4062,8 +4062,27 @@ export const orElseIfEmpty: {
   )))
 
 /**
+ * Returns a stream that emits a fallback value when this stream fails.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.fail("NetworkError").pipe(
+ *     Stream.orElseSucceed((error) => `Recovered: ${error}`)
+ *   )
+ *
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "Recovered: NetworkError" ]
+ * ```
+ *
  * @since 2.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const orElseSucceed: {
   <E, A2>(
