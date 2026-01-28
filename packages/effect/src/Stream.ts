@@ -1906,8 +1906,35 @@ export const tap: {
   ))
 
 /**
+ * Returns a stream that effectfully "peeks" at the failure or success of the stream.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.make(1, 2).pipe(
+ *     Stream.concat(Stream.fail("boom")),
+ *     Stream.tapBoth({
+ *       onElement: (value) => Console.log(`seen: ${value}`),
+ *       onError: (error) => Console.log(`error: ${error}`)
+ *     }),
+ *     Stream.catch(() => Stream.make(3))
+ *   )
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output:
+ * // seen: 1
+ * // seen: 2
+ * // error: boom
+ * // [ 1, 2, 3 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const tapBoth: {
   <A, E, X, E2, R2, Y, E3, R3>(
