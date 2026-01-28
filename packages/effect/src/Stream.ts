@@ -3823,8 +3823,31 @@ export const catchIf: {
   catchFilter(self, Filter.fromPredicate(predicate as Predicate<E>), f as any) as any)
 
 /**
+ * Effectfully peeks at errors without changing the stream unless the tap fails.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2).pipe(
+ *   Stream.concat(Stream.fail("boom")),
+ *   Stream.tapError((error) => Console.log(`tapError: ${error}`)),
+ *   Stream.catch(() => Stream.make(999))
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output:
+ * // tapError: boom
+ * // [ 1, 2, 999 ]
+ * ```
+ *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const tapError: {
   <E, A2, E2, R2>(
