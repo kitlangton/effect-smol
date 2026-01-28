@@ -3844,14 +3844,41 @@ export const tapError: {
   ))
 
 /**
+ * Recovers from errors that match a filter by switching to a recovery stream.
+ *
+ * When a failure matches the filter, the stream switches to the recovery
+ * stream. Non-matching failures propagate downstream, so the error type is
+ * preserved unless the filter narrows it.
+ *
  * **Previously Known As**
  *
  * This API replaces the following from Effect 3.x:
  *
  * - `Stream.catchSome`
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2).pipe(
+ *   Stream.concat(Stream.fail(42)),
+ *   Stream.catchFilter(
+ *     Filter.fromPredicate((error): error is 42 => error === 42),
+ *     () => Stream.make(999)
+ *   )
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ *   // Output: [ 1, 2, 999 ]
+ * })
+ *
+ * Effect.runPromise(program)
+ * ```
+ *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchFilter: {
   <E, EB, X, A2, E2, R2>(
