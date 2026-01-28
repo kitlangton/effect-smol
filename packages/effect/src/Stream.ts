@@ -3541,6 +3541,21 @@ export const partition: {
  * Returns the specified stream if the given condition is satisfied, otherwise
  * returns an empty stream.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(
+ *     Stream.when(Stream.make(1, 2, 3), Effect.succeed(false))
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: []
+ * ```
+ *
  * @since 2.0.0
  * @category Filtering
  */
