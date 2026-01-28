@@ -2631,8 +2631,9 @@ const zipArrays = <AL, AR, A>(
 }
 
 /**
- * Zips this stream with another stream using a function that operates on arrays
- * (chunks) of elements rather than individual elements.
+ * Zips two streams by applying a function to non-empty arrays of elements.
+ *
+ * The function returns output plus leftover arrays that carry into the next pull.
  *
  * **Previously Known As**
  *
@@ -2640,8 +2641,31 @@ const zipArrays = <AL, AR, A>(
  *
  * - `Stream.zipWithChunks`
  *
+ * @example
+ * ```ts
+ * import { Array, Console, Effect, Stream } from "effect"
+ *
+ * const left = Stream.fromArrays([1, 2, 3], [4, 5])
+ * const right = Stream.fromArrays(["a", "b"], ["c", "d", "e"])
+ *
+ * const zipped = Stream.zipWithArray(left, right, (leftChunk, rightChunk) => {
+ *   const minLength = Math.min(leftChunk.length, rightChunk.length)
+ *   const output = Array.makeBy(minLength, (i) => [leftChunk[i], rightChunk[i]] as const)
+ *
+ *   return [output, leftChunk.slice(minLength), rightChunk.slice(minLength)]
+ * })
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(zipped)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [[1, "a"], [2, "b"], [3, "c"], [4, "d"], [5, "e"]]
+ * ```
+ *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipWithArray: {
   <AR, ER, RR, AL, A>(
