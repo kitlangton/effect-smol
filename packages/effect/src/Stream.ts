@@ -3307,6 +3307,35 @@ export const filterMapEffect: {
 )
 
 /**
+ * Splits the stream into two streams based on a `Filter`, emitting passed values
+ * on the first stream and failed values on the second.
+ *
+ * If the upstream stream fails, both output streams fail.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const program = Effect.scoped(
+ *   Effect.gen(function*() {
+ *     const [evens, odds] = yield* Stream.partitionFilter(
+ *       Stream.range(0, 5),
+ *       (n) => (n % 2 === 0 ? n : Filter.fail(n))
+ *     )
+ *
+ *     const result = yield* Effect.all({
+ *       evens: Stream.runCollect(evens),
+ *       odds: Stream.runCollect(odds)
+ *     })
+ *
+ *     yield* Console.log(result)
+ *   })
+ * )
+ *
+ * Effect.runPromise(program)
+ * // Output: { evens: [ 0, 2, 4 ], odds: [ 1, 3, 5 ] }
+ * ```
+ *
  * @since 2.0.0
  * @category Filtering
  */
