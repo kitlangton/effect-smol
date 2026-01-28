@@ -4553,8 +4553,26 @@ export const dropUntil: {
  * Drops all elements of the stream until the specified effectful predicate
  * evaluates to `true`.
  *
+ * The first element that satisfies the predicate is also dropped.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.range(1, 5).pipe(
+ *     Stream.dropUntilEffect((n) => Effect.succeed(n % 3 === 0)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 4, 5 ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const dropUntilEffect: {
   <A, E2, R2>(
