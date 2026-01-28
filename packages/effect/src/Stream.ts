@@ -1764,7 +1764,7 @@ export const mapBoth: {
   ))
 
 /**
- * Maps over non-empty arrays emitted by the stream.
+ * Transforms each emitted chunk using the provided function, which receives the chunk and its index.
  *
  * **Previously Known As**
  *
@@ -1777,16 +1777,16 @@ export const mapBoth: {
  * import { Array, Console, Effect, Stream } from "effect"
  *
  * const program = Effect.gen(function*() {
- *   const result = yield* Stream.fromArray([1, 2, 3, 4]).pipe(
+ *   const result = yield* Stream.make(1, 2, 3, 4).pipe(
  *     Stream.rechunk(2),
- *     Stream.mapArray((chunk, index) => Array.map(chunk, (n) => n + index * 10)),
+ *     Stream.mapArray((chunk, index) => Array.map(chunk, (n) => n + index)),
  *     Stream.runCollect
  *   )
  *   yield* Console.log(result)
  * })
  *
  * Effect.runPromise(program)
- * // Output: [1, 2, 13, 14]
+ * // Output: [ 1, 2, 4, 5 ]
  * ```
  *
  * @since 2.0.0
