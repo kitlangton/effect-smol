@@ -4379,21 +4379,26 @@ export const takeUntil: {
 )
 
 /**
- * Takes all elements of the stream until the specified effectual predicate
- * evaluates to `true`.
+ * Effectful predicate version of `takeUntil`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5)
- * const result = Stream.takeUntilEffect(stream, (n) => Effect.succeed(n === 3))
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.range(1, 5).pipe(
+ *     Stream.takeUntilEffect((n) => Effect.succeed(n % 3 === 0)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(result)).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const takeUntilEffect: {
   <A, E2, R2>(
