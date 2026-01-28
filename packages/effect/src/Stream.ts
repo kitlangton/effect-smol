@@ -3427,8 +3427,33 @@ export const partitionFilterQueue: {
 )
 
 /**
+ * Splits a stream using an effectful filter, producing pass and fail streams.
+ *
  * @since 4.0.0
  * @category Filtering
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const program = Effect.scoped(
+ *   Effect.gen(function*() {
+ *     const [evens, odds] = yield* Stream.make(1, 2, 3, 4).pipe(
+ *       Stream.partitionFilterEffect((n) =>
+ *         Effect.succeed(n % 2 === 0 ? n : Filter.fail(n))
+ *       )
+ *     )
+ *     const result = yield* Effect.all({
+ *       evens: Stream.runCollect(evens),
+ *       odds: Stream.runCollect(odds)
+ *     })
+ *     yield* Console.log(result)
+ *   })
+ * )
+ *
+ * Effect.runPromise(program)
+ * // Output: { evens: [ 2, 4 ], odds: [ 1, 3 ] }
+ * ```
  */
 export const partitionFilterEffect: {
   <A, B, X, EX, RX>(filter: Filter.FilterEffect<A, B, X, EX, RX>, options?: {
