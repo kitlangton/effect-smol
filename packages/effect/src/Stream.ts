@@ -4670,21 +4670,27 @@ export const dropRight: {
 )
 
 /**
- * Exposes the underlying chunks of the stream as a stream of chunks of
- * elements.
+ * Exposes the underlying chunks as a stream of non-empty arrays.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5)
- * const chunked = Stream.chunks(stream)
+ * const program = Effect.gen(function*() {
+ *   const chunks = yield* Stream.make(1, 2, 3, 4).pipe(
+ *     Stream.rechunk(2),
+ *     Stream.chunks,
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(chunks)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(chunked)).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, 2 ], [ 3, 4 ] ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Grouping
  */
 export const chunks = <A, E, R>(self: Stream<A, E, R>): Stream<Arr.NonEmptyReadonlyArray<A>, E, R> =>
   self.channel.pipe(
