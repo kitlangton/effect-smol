@@ -4149,7 +4149,7 @@ export const ignoreCause = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R>
   fromChannel(Channel.ignoreCause(self.channel))
 
 /**
- * When the stream fails, retry it according to the given schedule
+ * When the stream fails, retry it according to the given schedule.
  *
  * This retries the entire stream, so will re-execute all of the stream's
  * acquire operations.
@@ -4157,8 +4157,27 @@ export const ignoreCause = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R>
  * The schedule is reset as soon as the first element passes through the
  * stream again.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1).pipe(
+ *     Stream.concat(Stream.fail("boom")),
+ *     Stream.retry(Schedule.recurs(1)),
+ *     Stream.take(2),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 1 ]
+ * ```
+ *
  * @since 2.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const retry: {
   <E, X, E2, R2>(
