@@ -5019,8 +5019,32 @@ export const mapAccum: {
   )))
 
 /**
+ * Statefully maps over non-empty chunk arrays, emitting zero or more values per chunk.
+ *
+ * The mapping function runs once per chunk and the state is threaded across chunks.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const output = yield* Stream.make(1, 2, 3, 4, 5, 6).pipe(
+ *     Stream.rechunk(2),
+ *     Stream.mapAccumArray(() => 0, (sum: number, chunk) => {
+ *       const next = chunk.reduce((acc, n) => acc + n, sum)
+ *       return [next, [next]]
+ *     }),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(output)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 3, 10, 21 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const mapAccumArray: {
   <S, A, B>(
