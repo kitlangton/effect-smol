@@ -4098,10 +4098,27 @@ export const orElseSucceed: {
 export const orDie = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> => fromChannel(Channel.orDie(self.channel))
 
 /**
- * Ignore errors and convert them into an empty stream.
+ * Ignores failures and ends the stream on error.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.concat(Stream.fail("boom")),
+ *     Stream.ignore,
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
  *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const ignore = <A, E, R>(self: Stream<A, E, R>): Stream<A, never, R> => fromChannel(Channel.ignore(self.channel))
 
