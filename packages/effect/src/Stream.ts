@@ -4761,10 +4761,25 @@ export const sliding: {
 )
 
 /**
- * Like `sliding`, but with a configurable `stepSize` parameter.
+ * Emits sliding windows of `chunkSize` elements, advancing by `stepSize`.
+ *
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const chunks = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.slidingSize(3, 2),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(chunks)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, 2, 3 ], [ 3, 4, 5 ] ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Grouping
  */
 export const slidingSize: {
   (chunkSize: number, stepSize: number): <A, E, R>(self: Stream<A, E, R>) => Stream<Arr.NonEmptyReadonlyArray<A>, E, R>
