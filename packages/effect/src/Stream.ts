@@ -4463,21 +4463,26 @@ export const takeWhile: {
 )
 
 /**
- * Takes all elements of the stream for as long as the specified effectual predicate
- * evaluates to `true`.
+ * Takes elements from the stream while the effectful predicate is `true`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5)
- * const result = Stream.takeWhileEffect(stream, (n) => Effect.succeed(n < 4))
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.range(1, 5).pipe(
+ *     Stream.takeWhileEffect((n) => Effect.succeed(n % 3 !== 0)),
+ *     Stream.runCollect
+ *   )
+ *   Console.log(result)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(result)).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const takeWhileEffect: {
   <A, E2, R2>(
