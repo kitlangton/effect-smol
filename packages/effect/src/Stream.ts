@@ -4969,7 +4969,7 @@ export const combineArray: {
   )))
 
 /**
- * Statefully maps over the elements of this stream to produce new elements.
+ * Statefully maps elements, emitting zero or more outputs per input.
  *
  * @example
  * ```ts
@@ -4988,8 +4988,7 @@ export const combineArray: {
  * })
  *
  * Effect.runPromise(program)
- * // Output:
- * // [ 0, 1, 3, 6, 10, 15, 21 ]
+ * // Output: [ 0, 1, 3, 6, 10, 15, 21 ]
  * ```
  *
  * @since 2.0.0
