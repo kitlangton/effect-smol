@@ -4256,9 +4256,7 @@ export const withExecutionPlan: {
   }))
 
 /**
- * Takes the first specified number of elements from this stream.
- *
- * If `n` is less than 1, the resulting stream is empty.
+ * Takes the first `n` elements from this stream, returning `Stream.empty` when `n < 1`.
  *
  * @example
  * ```ts
@@ -4272,6 +4270,7 @@ export const withExecutionPlan: {
  *   yield* Console.log(values)
  * })
  *
+ * Effect.runPromise(program)
  * // Output: [ 1, 2, 3 ]
  * ```
  *
