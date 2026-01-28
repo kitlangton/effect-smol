@@ -2824,12 +2824,30 @@ export const mergeRight: {
 )
 
 /**
- * Merges a variable list of streams in a non-deterministic fashion. Up to `n`
- * streams may be consumed in parallel and up to `outputBuffer` chunks may be
- * buffered by this operator.
+ * Merges a collection of streams, running up to the specified number concurrently.
  *
  * @since 2.0.0
- * @category utils
+ * @category Merging
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const streams = [
+ *   Stream.fromEffect(Effect.delay(Effect.succeed("A"), "20 millis")),
+ *   Stream.fromEffect(Effect.delay(Effect.succeed("B"), "10 millis"))
+ * ]
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.mergeAll(streams, { concurrency: 2 }).pipe(
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "B", "A" ]
+ * ```
  */
 export const mergeAll: {
   (
