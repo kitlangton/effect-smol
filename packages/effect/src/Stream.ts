@@ -3947,8 +3947,40 @@ export const catchTag: {
 )
 
 /**
+ * Switches to a recovery stream based on matching `_tag` handlers.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * class NotFound {
+ *   readonly _tag = "NotFound"
+ *   constructor(readonly resource: string) {}
+ * }
+ *
+ * class Unauthorized {
+ *   readonly _tag = "Unauthorized"
+ *   constructor(readonly user: string) {}
+ * }
+ *
+ * const stream = Stream.fail(new NotFound("profile"))
+ *
+ * const program = Effect.gen(function* () {
+ *   const result = yield* stream.pipe(
+ *     Stream.catchTags({
+ *       NotFound: () => Stream.succeed("fallback"),
+ *       Unauthorized: () => Stream.succeed("login")
+ *     }),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * // Output: [ "fallback" ]
+ * ```
+ *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchTags: {
   <
