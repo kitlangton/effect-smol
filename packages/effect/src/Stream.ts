@@ -2630,7 +2630,7 @@ export const repeatElements: {
 export const forever = <A, E, R>(self: Stream<A, E, R>): Stream<A, E, R> => fromChannel(Channel.forever(self.channel))
 
 /**
- * Flattens a stream of iterables into a single stream.
+ * Submerges the iterables emitted by this stream into the stream's structure.
  *
  * **Previously Known As**
  *
@@ -2638,8 +2638,22 @@ export const forever = <A, E, R>(self: Stream<A, E, R>): Stream<A, E, R> => from
  *
  * - `Stream.flattenIterables`
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.make([1, 2], [3, 4]).pipe(Stream.flattenIterable)
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3, 4 ]
+ * ```
+ *
  * @since 4.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const flattenIterable = <A, E, R>(self: Stream<Iterable<A>, E, R>): Stream<A, E, R> =>
   flatMap(self, fromIterable)
