@@ -2249,10 +2249,27 @@ export const schedule: {
   ))
 
 /**
- * Ends the stream if it does not produce a value after the specified duration.
+ * Ends the stream if it does not produce a value within the specified duration.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1).pipe(
+ *     Stream.concat(Stream.never),
+ *     Stream.timeout("1 second"),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const timeout: {
   (duration: Duration.DurationInput): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
