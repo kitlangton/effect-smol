@@ -4319,32 +4319,35 @@ export const takeRight: {
 )
 
 /**
- * Takes all elements of the stream until the specified predicate evaluates to
- * `true`.
+ * Takes elements until the predicate matches.
+ *
+ * When `excludeLast` is `true`, the matching element is dropped.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3, 4, 5, 6)
+ * const stream = Stream.range(1, 5)
  *
- * // Take until we find a number greater than 3
- * const taken = stream.pipe(
- *   Stream.takeUntil((n) => n > 3)
- * )
+ * const program = Effect.gen(function*() {
+ *   const inclusive = yield* stream.pipe(
+ *     Stream.takeUntil((n) => n % 3 === 0),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(inclusive)
+ *   // Output: [ 1, 2, 3 ]
  *
- * Effect.runPromise(Stream.runCollect(taken)).then(console.log)
- *
- * // Exclude the element that satisfies the predicate
- * const takenExclusive = stream.pipe(
- *   Stream.takeUntil((n) => n > 3, { excludeLast: true })
- * )
- *
- * Effect.runPromise(Stream.runCollect(takenExclusive)).then(console.log)
+ *   const exclusive = yield* stream.pipe(
+ *     Stream.takeUntil((n) => n % 3 === 0, { excludeLast: true }),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(exclusive)
+ *   // Output: [ 1, 2 ]
+ * })
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const takeUntil: {
   <A>(predicate: (a: NoInfer<A>, n: number) => boolean, options?: {
