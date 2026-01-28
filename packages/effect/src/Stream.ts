@@ -7059,26 +7059,24 @@ export const throttle: {
 )
 
 /**
- * Groups adjacent elements by a key and emits tuples of the key with the non-empty group.
+ * Partitions the stream into non-empty arrays of the specified size.
+ *
+ * The final array may be smaller if there are not enough elements to fill it.
  *
  * @example
  * ```ts
  * import { Console, Effect, Stream } from "effect"
  *
- * Effect.gen(function*() {
- *   const result = yield* Stream.fromIterable([
- *     { code: 1, message: "A" },
- *     { code: 1, message: "B" },
- *     { code: 2, message: "C" },
- *     { code: 1, message: "D" }
- *   ]).pipe(
- *     Stream.groupAdjacentBy((x) => x.code),
+ * const program = Effect.gen(function*() {
+ *   const grouped = yield* Stream.range(1, 8).pipe(
+ *     Stream.grouped(3),
  *     Stream.runCollect
  *   )
- *
- *   yield* Console.log(result)
- *   // Output: [ [ 1, [ { code: 1, message: "A" }, { code: 1, message: "B" } ] ], [ 2, [ { code: 2, message: "C" } ] ], [ 1, [ { code: 1, message: "D" } ] ] ]
+ *   yield* Console.log(grouped)
  * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 ] ]
  * ```
  *
  * @since 2.0.0
