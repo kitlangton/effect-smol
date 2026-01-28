@@ -2446,11 +2446,43 @@ export const mergeEffect: {
 )
 
 /**
- * Merges this stream and the specified stream together to produce a stream of
- * results.
+ * Merges this stream and the specified stream together, tagging values from the
+ * left stream as `Result.succeed` and values from the right stream as `Result.fail`.
+ *
+ * **Previously Known As**
+ *
+ * This API replaces the following from Effect 3.x:
+ *
+ * - `Stream.mergeEither`
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Result, Stream } from "effect"
+ *
+ * const left = Stream.fromEffect(Effect.succeed("left"))
+ * const right = Stream.fromEffect(Effect.delay(Effect.succeed("right"), "10 millis"))
+ *
+ * const merged = left.pipe(
+ *   Stream.mergeResult(right),
+ *   Stream.map(
+ *     Result.match({
+ *       onFailure: (value) => `right:${value}`,
+ *       onSuccess: (value) => `left:${value}`
+ *     })
+ *   )
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(merged)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "left:left", "right:right" ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Merging
  */
 export const mergeResult: {
   <A2, E2, R2>(
