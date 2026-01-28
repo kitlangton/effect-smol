@@ -5401,8 +5401,27 @@ export const scanEffect: {
   ))
 
 /**
+ * Drops earlier elements within the debounce window and emits only the latest element after the pause.
+ *
+ * @example
+ * ```ts
+ * import { Console, Duration, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2, 3).pipe(
+ *   Stream.concat(Stream.fromEffect(Effect.sleep(Duration.millis(50)).pipe(Effect.as(4)))),
+ *   Stream.concat(Stream.make(5)),
+ *   Stream.debounce(Duration.millis(30))
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ *   // Output: [ 3, 5 ]
+ * })
+ * ```
+ *
  * @since 2.0.0
- * @category Rate-limiting
+ * @category Rate Limiting
  */
 export const debounce: {
   (duration: Duration.DurationInput): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
