@@ -3274,6 +3274,27 @@ export const filter: {
 )
 
 /**
+ * Filters and maps elements in a single pass using a `Filter`.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const positiveLabels = Filter.make((n: number) =>
+ *   n > 0 ? `+${n}` : Filter.fail(n)
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(2, -1, 3).pipe(
+ *     Stream.filterMap(positiveLabels),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * // Output: [ "+2", "+3" ]
+ * ```
+ *
  * @since 2.0.0
  * @category Filtering
  */
