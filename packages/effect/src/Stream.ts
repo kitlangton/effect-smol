@@ -3625,14 +3625,30 @@ export const peel: {
 )
 
 /**
- * Allows a faster producer to progress independently of a slower consumer by
- * buffering up to `capacity` elements in a queue.
+ * Buffers up to `capacity` elements so a faster producer can progress
+ * independently of a slower consumer.
  *
- * Note: This combinator destroys the chunking structure. It's recommended to
- *       use rechunk afterwards.
+ * Note: This combinator destroys chunking. Use `Stream.rechunk` afterwards if
+ * you need fixed chunk sizes.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.buffer({ capacity: 1 }),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const buffer: {
   (
