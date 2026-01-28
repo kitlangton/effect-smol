@@ -2883,18 +2883,22 @@ export const zipFlatten: {
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make("a", "b", "c", "d")
+ * const program = Effect.gen(function*() {
+ *   const indexed = yield* Stream.make("a", "b", "c", "d").pipe(
+ *     Stream.zipWithIndex,
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(indexed)
+ * })
  *
- * const indexed = Stream.zipWithIndex(stream)
- *
- * Effect.runPromise(Stream.runCollect(indexed)).then(console.log)
+ * Effect.runPromise(program)
  * // Output: [["a", 0], ["b", 1], ["c", 2], ["d", 3]]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipWithIndex = <A, E, R>(self: Stream<A, E, R>): Stream<[A, number], E, R> => map(self, (a, i) => [a, i])
 
