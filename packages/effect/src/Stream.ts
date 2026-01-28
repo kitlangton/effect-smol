@@ -5229,8 +5229,24 @@ export const scan: {
   }))
 
 /**
+ * Effectfully accumulates state and emits the initial state plus each accumulated state.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const states = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.scanEffect(0, (sum, n) => Effect.succeed(sum + n)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(states)
+ *   // Output: [ 0, 1, 3, 6 ]
+ * })
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Accumulation
  */
 export const scanEffect: {
   <S, A, E2, R2>(
