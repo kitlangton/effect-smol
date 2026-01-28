@@ -5573,6 +5573,33 @@ export const groupedWithin: {
   ))
 
 /**
+ * Groups elements into keyed substreams using an effectful classifier.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const grouped = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.groupBy((n) =>
+ *       Effect.succeed([n % 2 === 0 ? "even" : "odd", n] as const)
+ *     ),
+ *     Stream.mapEffect(
+ *       Effect.fnUntraced(function*([key, stream]) {
+ *         return [key, yield* Stream.runCollect(stream)] as const
+ *       }),
+ *       { concurrency: "unbounded" }
+ *     ),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(grouped)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ "odd", [ 1, 3, 5 ] ], [ "even", [ 2, 4 ] ] ]
+ * ```
+ *
  * @since 2.0.0
  * @category Grouping
  */
