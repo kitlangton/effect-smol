@@ -4535,11 +4535,24 @@ export const drop: {
 )
 
 /**
- * Drops all elements of the stream until the specified predicate evaluates to
- * `true`.
+ * Drops elements until the specified predicate evaluates to `true`, then drops
+ * that matching element.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2, 3, 4, 5)
+ * const result = Stream.dropUntil(stream, (n) => n >= 3)
+ *
+ * Effect.gen(function*() {
+ *   const output = yield* Stream.runCollect(result)
+ *   yield* Console.log(output) // Output: [ 4, 5 ]
+ * })
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const dropUntil: {
   <A>(predicate: (a: NoInfer<A>, index: number) => boolean): <E, R>(self: Stream<A, E, R>) => Stream<A, E, R>
