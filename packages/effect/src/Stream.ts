@@ -2532,14 +2532,28 @@ export const mergeAll: {
 ): Stream<A, E, R> => flatten(fromIterable(streams), options))
 
 /**
- * Composes this stream with the specified stream to create a cartesian
- * product of elements. The `right` stream would be run multiple times, for
- * every element in the `left` stream.
+ * Creates the cartesian product of two streams, running the `right` stream for
+ * each element in the `left` stream.
  *
  * See also `Stream.zip` for the more common point-wise variant.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const left = Stream.make(1, 2)
+ *   const right = Stream.make("a", "b")
+ *   const values = yield* Stream.runCollect(Stream.cross(left, right))
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ 1, "a" ], [ 1, "b" ], [ 2, "a" ], [ 2, "b" ] ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Zipping
  */
 export const cross: {
   <AR, ER, RR>(right: Stream<AR, ER, RR>): <AL, EL, RL>(left: Stream<AL, EL, RL>) => Stream<[AL, AR], EL | ER, RL | RR>
