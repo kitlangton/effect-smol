@@ -3773,28 +3773,38 @@ export {
 }
 
 /**
- * Recovers from specific errors based on a predicate.
+ * Recovers from failures that match a predicate or refinement.
+ *
+ * Only failure causes are checked; defects and interrupts are not caught, and
+ * non-matching errors re-fail with the original cause.
  *
  * @example
  * ```ts
- * import { Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * class HttpError {
  *   readonly _tag = "HttpError"
+ *   constructor(readonly status: number) {}
  * }
  *
- * const stream = Stream.fail(new HttpError())
+ * const stream = Stream.fail(new HttpError(404))
  *
- * const recovered = stream.pipe(
- *   Stream.catchIf(
- *     (error) => error._tag === "HttpError",
- *     () => Stream.make("recovered")
+ * const program = Effect.gen(function*() {
+ *   const values = yield* stream.pipe(
+ *     Stream.catchIf(
+ *       (error): error is HttpError => error._tag === "HttpError",
+ *       (error) => Stream.make(`recovered:${error.status}`)
+ *     ),
+ *     Stream.runCollect
  *   )
- * )
+ *   yield* Console.log(values)
+ * })
+ *
+ * // Output: [ "recovered:404" ]
  * ```
  *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchIf: {
   <E, EB extends E, A2, E2, R2>(
