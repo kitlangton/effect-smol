@@ -4928,8 +4928,33 @@ export const combine: {
  *
  * - `Stream.combineChunks`
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2).pipe(
+ *   Stream.combineArray(
+ *     Stream.make(10, 20),
+ *     () => true,
+ *     (useLeft, pullLeft, pullRight) =>
+ *       Effect.gen(function*() {
+ *         const chunk = useLeft ? yield* pullLeft : yield* pullRight
+ *         return [chunk, !useLeft] as const
+ *       })
+ *   )
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 10, 20 ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const combineArray: {
   <A2, E2, R2, S, E, A, A3, E3, R3>(
