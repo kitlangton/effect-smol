@@ -4813,21 +4813,28 @@ export const slidingSize: {
 )
 
 /**
- * Splits elements based on a predicate or refinement.
+ * Splits the stream into non-empty groups whenever the predicate matches.
  *
+ * Matching elements act as delimiters and are not included in the output.
+ *
+ * @example
  * ```ts
- * import { pipe, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * pipe(
- *   Stream.range(1, 10),
- *   Stream.split((n) => n % 4 === 0),
- *   Stream.runCollect
- * )
- * // => [[1, 2, 3], [5, 6, 7], [9, 10]]
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.range(0, 9).pipe(
+ *     Stream.split((n) => n % 4 === 0),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [1, 2, 3], [5, 6, 7], [9] ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Grouping
  */
 export const split: {
   <A, B extends A>(
