@@ -5170,8 +5170,26 @@ export const mapAccumArrayEffect: {
   ))
 
 /**
+ * Accumulates state across the stream, emitting the initial state and each updated state.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.scan(0, (acc, n) => acc + n),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 0, 1, 3, 6 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Accumulation
  */
 export const scan: {
   <S, A>(
