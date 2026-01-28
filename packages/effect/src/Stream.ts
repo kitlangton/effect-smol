@@ -1605,18 +1605,19 @@ export const range = (
   }))
 
 /**
- * Creates a `Stream` that runs forever but never emits an output.
+ * The stream that never produces any value or fails with any error.
  *
  * @example
  * ```ts
- * import { Stream } from "effect"
+ * import { Effect, Stream } from "effect"
  *
- * // A stream that never emits values or completes
- * const neverStream = Stream.never
+ * const program = Stream.never.pipe(
+ *   Stream.take(0),
+ *   Stream.runCollect
+ * )
  *
- * // This will run indefinitely (be careful in practice!)
- * // const program = neverStream.pipe(Stream.runCollect)
- * // Effect.runPromise(program) // Never resolves
+ * Effect.runPromise(program).then(console.log)
+ * // []
  * ```
  *
  * @since 4.0.0
@@ -1625,31 +1626,55 @@ export const range = (
 export const never: Stream<never> = fromChannel(Channel.never)
 
 /**
- * Creates a stream produced from a scoped `Effect`.
+ * Creates a stream produced from an `Effect`.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const effectThatCreatesStream = Effect.succeed(
- *   Stream.make(1, 2, 3)
- * )
+ * const effect = Effect.succeed(Stream.make(1, 2, 3))
  *
- * const stream = Stream.unwrap(effectThatCreatesStream)
+ * const stream = Stream.unwrap(effect)
  *
- * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+ * const program = Effect.gen(function*() {
+ *   const chunk = yield* Stream.runCollect(stream)
+ *   yield* Console.log(Array.from(chunk))
+ * })
+ * // [1, 2, 3]
  * ```
  *
  * @since 2.0.0
- * @category constructors
+ * @category Constructors
  */
 export const unwrap = <A, E2, R2, E, R>(
   effect: Effect.Effect<Stream<A, E2, R2>, E, R>
 ): Stream<A, E | E2, R2 | Exclude<R, Scope.Scope>> => fromChannel(Channel.unwrap(Effect.map(effect, toChannel)))
 
 /**
+ * Runs a stream that requires `Scope` in a managed scope, ensuring its
+ * finalizers are run when the stream completes.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.scoped(
+ *   Stream.fromEffect(
+ *     Effect.acquireRelease(
+ *       Console.log("acquire").pipe(Effect.as("resource")),
+ *       () => Console.log("release")
+ *     )
+ *   )
+ * )
+ *
+ * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+ * // acquire
+ * // release
+ * // [ "resource" ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category constructors
  */
 export const scoped = <A, E, R>(
   self: Stream<A, E, R>
@@ -1660,16 +1685,19 @@ export const scoped = <A, E, R>(
  *
  * @example
  * ```ts
- * import { Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.fromArray([1, 2, 3]).pipe(Stream.map((n) => n + 1))
+ * const stream = Stream.fromArray([1, 2, 3]).pipe(Stream.map((n, i) => n + i))
+ * const program = Stream.runCollect(stream).pipe(
+ *   Effect.tap((values) => Console.log(values))
+ * )
  *
- * // Effect.runPromise(Stream.runCollect(stream)).then(console.log)
- * // [ 2, 3, 4 ]
+ * Effect.runPromise(program)
+ * // [ 1, 3, 5 ]
  * ```
  *
  * @since 2.0.0
- * @category mapping
+ * @category Mapping
  */
 export const map: {
   <A, B>(f: (a: A, i: number) => B): <E, R>(self: Stream<A, E, R>) => Stream<B, E, R>
@@ -1684,11 +1712,39 @@ export const map: {
   }))
 
 /**
- * Returns a stream whose failure and success channels have been mapped by the
- * specified `onFailure` and `onSuccess` functions.
+ * Maps both the failure and success channels of a stream.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const mapper = {
+ *   onFailure: (error: string) => `error: ${error}`,
+ *   onSuccess: (value: number) => value * 2
+ * }
+ *
+ * const program = Effect.gen(function*() {
+ *   const success = yield* Stream.make(1, 2).pipe(
+ *     Stream.mapBoth(mapper),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(success)
+ *
+ *   const failure = yield* Stream.fail("boom").pipe(
+ *     Stream.mapBoth(mapper),
+ *     Stream.catch((error: string) => Stream.succeed(error)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(failure)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 2, 4 ]
+ * // Output: [ "error: boom" ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Mapping
  */
 export const mapBoth: {
   <E, E2, A, A2>(
@@ -1708,14 +1764,33 @@ export const mapBoth: {
   ))
 
 /**
+ * Maps over non-empty arrays emitted by the stream.
+ *
  * **Previously Known As**
  *
  * This API replaces the following from Effect 3.x:
  *
  * - `Stream.mapChunks`
  *
+ * @example
+ * ```ts
+ * import { Array, Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.fromArray([1, 2, 3, 4]).pipe(
+ *     Stream.rechunk(2),
+ *     Stream.mapArray((chunk, index) => Array.map(chunk, (n) => n + index * 10)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [1, 2, 13, 14]
+ * ```
+ *
  * @since 2.0.0
- * @category mapping
+ * @category Mapping
  */
 export const mapArray: {
   <A, B>(
@@ -1748,14 +1823,21 @@ export const mapArray: {
  *   )
  * )
  *
- * Effect.runPromise(Stream.runCollect(mappedStream)).then(console.log)
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(mappedStream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output:
  * // Processing: 1
  * // Processing: 2
  * // Processing: 3
+ * // [2, 4, 6]
  * ```
  *
  * @since 2.0.0
- * @category mapping
+ * @category Mapping
  */
 export const mapEffect: {
   <A, A2, E2, R2>(
@@ -1789,8 +1871,25 @@ export const mapEffect: {
   ))
 
 /**
+ * Flattens a stream of `Effect` values into a stream of their results.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(Effect.succeed(1), Effect.succeed(2), Effect.succeed(3))
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream.pipe(Stream.flattenEffect()))
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [1, 2, 3]
+ * ```
+ *
  * @since 2.0.0
- * @category mapping
+ * @category Mapping
  */
 export const flattenEffect: {
   (
@@ -1815,14 +1914,35 @@ export const flattenEffect: {
 ): Stream<A, EX | E, RX | R> => mapEffect(self, identity, options))
 
 /**
+ * Effectfully maps over non-empty array chunks emitted by the stream.
+ *
  * **Previously Known As**
  *
  * This API replaces the following from Effect 3.x:
  *
  * - `Stream.mapChunksEffect`
  *
+ * @example
+ * ```ts
+ * import { Array, Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.fromArray([1, 2, 3, 4]).pipe(
+ *     Stream.rechunk(2),
+ *     Stream.mapArrayEffect((chunk, index) =>
+ *       Effect.succeed(Array.map(chunk, (n) => n + index * 10))
+ *     ),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [1, 2, 13, 14]
+ * ```
+ *
  * @since 4.0.0
- * @category mapping
+ * @category Mapping
  */
 export const mapArrayEffect: {
   <A, B, E2, R2>(
@@ -1838,14 +1958,39 @@ export const mapArrayEffect: {
 ): Stream<B, E | E2, R | R2> => fromChannel(Channel.mapEffect(self.channel, f)))
 
 /**
- * Returns a stream whose failures and successes have been lifted into an
- * `Result`. The resulting stream cannot fail, because the failures have been
- * exposed as part of the `Result` success case.
+ * Lifts failures and successes into a `Result`, yielding a stream that cannot fail.
  *
- * @note The stream will end as soon as the first error occurs.
+ * The stream ends after the first failure, emitting a `Result.fail` value.
+ *
+ * **Previously Known As:**
+ *
+ * This API replaces the following from Effect 3.x:
+ *
+ * - `Stream.either`
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Result, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const results = yield* Stream.make(1, 2).pipe(
+ *     Stream.concat(Stream.fail("boom")),
+ *     Stream.result,
+ *     Stream.map(Result.match({
+ *       onFailure: (error) => `failure: ${error}`,
+ *       onSuccess: (value) => `success: ${value}`
+ *     })),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(results)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "success: 1", "success: 2", "failure: boom" ]
+ * ```
  *
  * @since 4.0.0
- * @category utils
+ * @category Error Handling
  */
 export const result = <A, E, R>(self: Stream<A, E, R>): Stream<Result.Result<A, E>, never, R> =>
   self.pipe(
@@ -1854,29 +1999,36 @@ export const result = <A, E, R>(self: Stream<A, E, R>): Stream<Result.Result<A, 
   )
 
 /**
- * Adds an effect to consumption of every element of the stream.
+ * Runs the provided effect for each element while preserving the elements.
  *
  * @example
  * ```ts
- * import { Console, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.fromArray([1, 2, 3]).pipe(
- *   Stream.tap((n) => Console.log(`before mapping: ${n}`)),
- *   Stream.map((n) => n * 2),
- *   Stream.tap((n) => Console.log(`after mapping: ${n}`))
- * )
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.fromArray([1, 2, 3]).pipe(
+ *     Stream.tap((n) => Console.log(`before mapping: ${n}`)),
+ *     Stream.map((n) => n * 2),
+ *     Stream.tap((n) => Console.log(`after mapping: ${n}`)),
+ *     Stream.runCollect
+ *   )
  *
- * // Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output:
  * // before mapping: 1
  * // after mapping: 2
  * // before mapping: 2
  * // after mapping: 4
  * // before mapping: 3
  * // after mapping: 6
+ * // [ 2, 4, 6 ]
  * ```
  *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const tap: {
   <A, X, E2, R2>(
@@ -1906,8 +2058,36 @@ export const tap: {
   ))
 
 /**
+ * Returns a stream that effectfully "peeks" at elements and failures.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(1, 2).pipe(
+ *   Stream.mapEffect((n) =>
+ *     n === 2 ? Effect.fail("boom") : Effect.succeed(n)
+ *   ),
+ *   Stream.tapBoth({
+ *     onElement: (value) => Console.log(`value: ${value}`),
+ *     onError: (error) => Console.log(`error: ${error}`)
+ *   }),
+ *   Stream.catch((error) => Stream.succeed(`recovered: ${error}`))
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: value: 1
+ * // Output: error: boom
+ * // Output: [ 1, "recovered: boom" ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const tapBoth: {
   <A, E, X, E2, R2, Y, E3, R3>(
@@ -1942,8 +2122,31 @@ export const tapBoth: {
  * Sends all elements emitted by this stream to the specified sink in addition
  * to emitting them.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Ref, Sink, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const seen = yield* Ref.make<Array<number>>([])
+ *   const sink = Sink.forEach((value: number) =>
+ *     Ref.update(seen, (items) => [...items, value])
+ *   )
+ *   const result = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.tapSink(sink),
+ *     Stream.runCollect
+ *   )
+ *   const tapped = yield* Ref.get(seen)
+ *   yield* Console.log(tapped)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [1, 2, 3]
+ * // Output: [1, 2, 3]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const tapSink: {
   <A, E2, R2>(sink: Sink.Sink<unknown, A, unknown, E2, R2>): <E, R>(self: Stream<A, E, R>) => Stream<A, E2 | E, R2 | R>
@@ -2013,26 +2216,26 @@ export const tapSink: {
 )
 
 /**
- * Returns a stream made of the concatenation in strict order of all the
- * streams produced by passing each element of this stream to `f0`
+ * Maps each element to a stream and concatenates the results in order.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2, 3)
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.flatMap((n) => Stream.make(n, n * 2)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
  *
- * const flatMapped = stream.pipe(
- *   Stream.flatMap((n) => Stream.make(n, n * 2))
- * )
- *
- * const program = flatMapped.pipe(Stream.runCollect)
- *
- * Effect.runPromise(program).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 2, 4, 3, 6 ]
  * ```
  *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const flatMap: {
   <A, A2, E2, R2>(
@@ -2065,8 +2268,27 @@ export const flatMap: {
   ))
 
 /**
+ * Switches to the latest stream produced by the mapping function, interrupting
+ * the previous stream when a new element arrives.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Stream.make(1, 2, 3).pipe(
+ *   Stream.switchMap((n) => (n === 3 ? Stream.make(n) : Stream.never)),
+ *   Stream.runCollect
+ * )
+ *
+ * Effect.gen(function*() {
+ *   const result = yield* program
+ *   yield* Console.log(result)
+ *   // Output: [ 3 ]
+ * })
+ * ```
+ *
  * @since 4.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const switchMap: {
   <A, A2, E2, R2>(
@@ -2099,11 +2321,12 @@ export const switchMap: {
   ))
 
 /**
- * Flattens a stream of streams into a single stream.
+ * Flattens a stream of streams into a single stream by concatenating the
+ * inner streams in strict order.
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
  * const streamOfStreams = Stream.make(
  *   Stream.make(1, 2),
@@ -2111,13 +2334,17 @@ export const switchMap: {
  *   Stream.make(5, 6)
  * )
  *
- * const flattened = Stream.flatten(streamOfStreams)
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(Stream.flatten(streamOfStreams))
+ *   yield* Console.log(values)
+ * })
  *
- * Effect.runPromise(Stream.runCollect(flattened)).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3, 4, 5, 6 ]
  * ```
  *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const flatten: {
   (
@@ -2142,7 +2369,7 @@ export const flatten: {
 ): Stream<A, E | E2, R | R2> => flatMap(self, identity, options))
 
 /**
- * Flattens a stream of non-empty arrays into a single stream.
+ * Flattens a stream of non-empty arrays into a stream of elements.
  *
  * **Previously Known As**
  *
@@ -2150,25 +2377,76 @@ export const flatten: {
  *
  * - `Stream.flattenChunks`
  *
+ * @example
+ * ```ts
+ * import { Array, Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make(Array.make(1, 2), Array.make(3))
+ *
+ * const program = Effect.gen(function* () {
+ *   const result = yield* Stream.runCollect(Stream.flattenArray(stream))
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
+ *
  * @since 4.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const flattenArray = <A, E, R>(self: Stream<Arr.NonEmptyReadonlyArray<A>, E, R>): Stream<A, E, R> =>
   fromChannel(Channel.flattenArray(self.channel))
 
 /**
+ * Converts this stream to one that runs its effects but emits no elements.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.range(1, 6).pipe(Stream.drain, Stream.runCollect)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: []
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Sequencing
  */
 export const drain = <A, E, R>(self: Stream<A, E, R>): Stream<never, E, R> => fromChannel(Channel.drain(self.channel))
 
 /**
- * Drains the provided stream in the background for as long as this stream is
- * running. If this stream ends before `other`, `other` will be interrupted.
- * If `other` fails, this stream will fail with that error.
+ * Runs the provided stream in the background while this stream emits elements.
+ *
+ * If this stream completes first, the background stream is interrupted. If the
+ * background stream fails, this stream fails with the same error.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const foreground = Stream.make(1, 2)
+ * const background = Stream.fromEffect(Console.log("background task"))
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* foreground.pipe(
+ *     Stream.drainFork(background),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: background task
+ * // Output: [ 1, 2 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const drainFork: {
   <A2, E2, R2>(that: Stream<A2, E2, R2>): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E2 | E, R2 | R>
@@ -2180,23 +2458,27 @@ export const drainFork: {
 )
 
 /**
- * Repeats the entire stream using the specified schedule. The stream will
- * execute normally, and then repeat again according to the provided schedule.
+ * Repeats the entire stream according to the provided schedule.
  *
  * @example
  * ```ts
- * import { Effect, Schedule, Stream } from "effect"
+ * import { Console, Effect, Schedule, Stream } from "effect"
  *
- * const stream = Stream.repeat(Stream.succeed(1), Schedule.forever)
+ * const stream = Stream.make(1)
  *
- * Effect.runPromise(Stream.runCollect(stream.pipe(Stream.take(5)))).then(
- *   console.log
- * )
- * // { _id: 'Chunk', values: [ 1, 1, 1, 1, 1 ] }
+ * const program = Effect.gen(function* () {
+ *   const result = yield* Stream.runCollect(
+ *     Stream.repeat(stream, Schedule.recurs(4))
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 1, 1, 1, 1 ]
  * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const repeat: {
   <B, E2, R2>(
@@ -2224,10 +2506,27 @@ export const repeat: {
 ): Stream<A, E | E2, R | R2> => fromChannel(Channel.repeat(self.channel, schedule)))
 
 /**
- * Schedules the output of the stream using the provided `schedule`.
+ * Spaces the stream's elements according to the provided `schedule`.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.make(1, 2, 3).pipe(
+ *     Stream.schedule(Schedule.spaced("10 millis")),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Rate Limiting
  */
 export const schedule: {
   <X, E2, R2, A>(
@@ -3351,6 +3650,24 @@ export const race: {
 ): Stream<AL | AR, EL | ER, RL | RR> => raceAll(left, right))
 
 /**
+ * Filters a stream to the elements that satisfy a predicate.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.make(1, 2, 3, 4).pipe(
+ *     Stream.filter((n) => n % 2 === 0)
+ *   )
+ *   const values = yield* Stream.runCollect(stream)
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 2, 4 ]
+ * ```
+ *
  * @since 2.0.0
  * @category Filtering
  */
