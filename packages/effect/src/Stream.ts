@@ -3084,9 +3084,7 @@ export const zipLatestAll = <T extends ReadonlyArray<Stream<any, any, any>>>(
   })) as any
 
 /**
- * Zips the two streams so that when a value is emitted by either of the two
- * streams, it is combined with the latest value from the other stream to
- * produce a result.
+ * Combines two streams by emitting each new element with the latest value from the other stream.
  *
  * Note: tracking the latest value is done on a per-array basis. That means
  * that emitted elements that are not the last value in arrays will never be
@@ -3094,35 +3092,21 @@ export const zipLatestAll = <T extends ReadonlyArray<Stream<any, any, any>>>(
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const s1 = Stream.make(1, 2, 3)
- * const s2 = Stream.make("a", "b", "c", "d")
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.zipLatest(
+ *     Stream.make(1),
+ *     Stream.make("a")
+ *   ).pipe(Stream.runCollect)
  *
- * const stream = Stream.zipLatest(s1, s2)
- *
- * Effect.runPromise(Stream.runCollect(stream)).then(console.log)
- * // Output combines values as they arrive
- * ```
- *
- * @example
- * ```ts
- * import { Effect, Stream } from "effect"
- *
- * // Combining sensor readings with timestamps
- * const temperatures = Stream.make(20.5, 21.0, 20.8, 22.1)
- * const timestamps = Stream.make("10:00", "10:01", "10:02", "10:03", "10:04")
- *
- * const readings = Stream.zipLatest(temperatures, timestamps)
- *
- * Effect.runPromise(Stream.runCollect(readings)).then((result) =>
- *   console.log(result)
- * )
- * // Each temperature is paired with the latest timestamp
+ *   yield* Console.log(result)
+ * })
+ * // Output: [ [1, "a"] ]
  * ```
  *
  * @since 2.0.0
- * @category zipping
+ * @category Zipping
  */
 export const zipLatest: {
   <AR, ER, RR>(
