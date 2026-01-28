@@ -3500,13 +3500,32 @@ export const partitionFilterEffect: {
 )
 
 /**
- * Splits a stream into two substreams based on a predicate.
+ * Splits a stream into excluded and satisfying substreams using a predicate or
+ * refinement.
  *
  * The faster stream may advance up to `bufferSize` elements ahead of the slower
  * one.
  *
  * @since 4.0.0
  * @category Filtering
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const [excluded, satisfying] = yield* Stream.partition(
+ *     Stream.make(1, 2, 3, 4),
+ *     (n) => n % 2 === 0
+ *   )
+ *   const left = yield* Stream.runCollect(excluded)
+ *   const right = yield* Stream.runCollect(satisfying)
+ *   yield* Console.log(left)
+ *   // Output: [ 1, 3 ]
+ *   yield* Console.log(right)
+ *   // Output: [ 2, 4 ]
+ * })
+ * ```
  */
 export const partition: {
   <C extends A, B extends A, A = C>(
