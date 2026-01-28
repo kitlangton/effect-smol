@@ -3190,8 +3190,26 @@ export const zipLatestWith: {
 )
 
 /**
+ * Races multiple streams and emits values from the first stream to produce a value, interrupting the rest.
+ *
  * @since 3.7.0
- * @category racing
+ * @category Racing
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.raceAll(
+ *     Stream.fromSchedule(Schedule.spaced("1 second")),
+ *     Stream.make(0, 1, 2)
+ *   ).pipe(Stream.runCollect)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 0, 1, 2 ]
+ * ```
  */
 export const raceAll = <S extends ReadonlyArray<Stream<any, any, any>>>(
   ...streams: S
