@@ -2268,14 +2268,26 @@ export const timeout: {
 )
 
 /**
- * Repeats each element of the stream using the provided schedule. Repetitions
- * are done in addition to the first execution, which means using
- * `Schedule.recurs(1)` actually results in the original effect, plus an
- * additional recurrence, for a total of two repetitions of each value in the
- * stream.
+ * Repeats each element of the stream according to the provided schedule,
+ * including the original emission.
  *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.make("A", "B", "C").pipe(
+ *     Stream.repeatElements(Schedule.recurs(1)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(values)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "A", "A", "B", "B", "C", "C" ]
+ * ```
  */
 export const repeatElements: {
   <B, E2, R2>(
