@@ -2325,8 +2325,26 @@ export const repeatElements: {
 /**
  * Repeats this stream forever.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.make("A", "B").pipe(
+ *   Stream.forever,
+ *   Stream.take(5)
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const output = yield* Stream.runCollect(stream)
+ *   yield* Console.log(output)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "A", "B", "A", "B", "A" ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const forever = <A, E, R>(self: Stream<A, E, R>): Stream<A, E, R> => fromChannel(Channel.forever(self.channel))
 
