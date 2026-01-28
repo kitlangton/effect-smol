@@ -2064,26 +2064,25 @@ export const tap: {
  * ```ts
  * import { Console, Effect, Stream } from "effect"
  *
- * const stream = Stream.make(1, 2).pipe(
- *   Stream.mapEffect((n) =>
- *     n === 2 ? Effect.fail("boom") : Effect.succeed(n)
- *   ),
- *   Stream.tapBoth({
- *     onElement: (value) => Console.log(`value: ${value}`),
- *     onError: (error) => Console.log(`error: ${error}`)
- *   }),
- *   Stream.catch((error) => Stream.succeed(`recovered: ${error}`))
- * )
- *
  * const program = Effect.gen(function*() {
+ *   const stream = Stream.make(1, 2).pipe(
+ *     Stream.concat(Stream.fail("boom")),
+ *     Stream.tapBoth({
+ *       onElement: (value) => Console.log(`seen: ${value}`),
+ *       onError: (error) => Console.log(`error: ${error}`)
+ *     }),
+ *     Stream.catch(() => Stream.make(3))
+ *   )
  *   const result = yield* Stream.runCollect(stream)
  *   yield* Console.log(result)
  * })
  *
  * Effect.runPromise(program)
- * // Output: value: 1
- * // Output: error: boom
- * // Output: [ 1, "recovered: boom" ]
+ * // Output:
+ * // seen: 1
+ * // seen: 2
+ * // error: boom
+ * // [ 1, 2, 3 ]
  * ```
  *
  * @since 2.0.0
