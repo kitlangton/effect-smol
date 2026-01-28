@@ -4863,17 +4863,37 @@ export const split: {
   }))
 
 /**
- * Combines the elements from this stream and the specified stream by
- * repeatedly applying the function `f` to extract an element using both sides
- * and conceptually "offer" it to the destination stream. `f` can maintain
- * some internal state to control the combining process, with the initial
- * state being specified by `s`.
+ * Combines elements from this stream and the specified stream by repeatedly
+ * applying a stateful function that can pull from either side.
  *
  * Where possible, prefer `Stream.combineArray` for a more efficient
  * implementation.
  *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const stream = Stream.combine(
+ *   Stream.make("A", "B", "C"),
+ *   Stream.make(1, 2, 3),
+ *   () => true,
+ *   (takeLeft, pullLeft, pullRight) =>
+ *     takeLeft
+ *       ? Effect.map(pullLeft, (value) => [`L:${value}`, false] as const)
+ *       : Effect.map(pullRight, (value) => [`R:${value}`, true] as const)
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const output = yield* Stream.runCollect(stream)
+ *   yield* Console.log(output)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ "L:A", "R:1", "L:B", "R:2", "L:C", "R:3" ]
+ * ```
+ *
  * @since 2.0.0
- * @category utils
+ * @category Merging
  */
 export const combine: {
   <A2, E2, R2, S, E, A, A3, E3, R3>(
