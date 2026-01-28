@@ -2163,12 +2163,25 @@ export const flattenArray = <A, E, R>(self: Stream<Arr.NonEmptyReadonlyArray<A>,
 export const drain = <A, E, R>(self: Stream<A, E, R>): Stream<never, E, R> => fromChannel(Channel.drain(self.channel))
 
 /**
- * Drains the provided stream in the background for as long as this stream is
- * running. If this stream ends before `other`, `other` will be interrupted.
- * If `other` fails, this stream will fail with that error.
+ * Runs the provided stream in the background while this stream runs, interrupting it
+ * when this stream completes and failing if the background stream fails or defects.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const stream = Stream.make(1, 2, 3).pipe(Stream.drainFork(Stream.never))
+ *   const result = yield* Stream.runCollect(stream)
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 3 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Sequencing
  */
 export const drainFork: {
   <A2, E2, R2>(that: Stream<A2, E2, R2>): <A, E, R>(self: Stream<A, E, R>) => Stream<A, E2 | E, R2 | R>
