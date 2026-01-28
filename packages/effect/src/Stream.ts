@@ -5617,6 +5617,31 @@ export const groupBy: {
   ))
 
 /**
+ * Groups elements by a key and emits a stream per key.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const grouped = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.groupByKey((n) => n % 2 === 0 ? "even" : "odd"),
+ *     Stream.mapEffect(
+ *       ([key, stream]) =>
+ *         Stream.runCollect(stream).pipe(
+ *           Effect.map((values) => [key, values] as const)
+ *         ),
+ *       { concurrency: "unbounded" }
+ *     ),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(grouped)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ [ "odd", [ 1, 3, 5 ] ], [ "even", [ 2, 4 ] ] ]
+ * ```
+ *
  * @since 2.0.0
  * @category Grouping
  */
