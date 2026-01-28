@@ -5872,6 +5872,28 @@ export const aggregate: {
 ): Stream<B, E | E2, R | R2> => aggregateWithin(self, sink, Schedule.forever))
 
 /**
+ * Aggregates elements with a sink, emitting each result when the sink completes or the schedule triggers.
+ *
+ * The schedule can flush the current aggregation even if the sink has not finished.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Schedule, Sink, Stream } from "effect"
+ *
+ * Effect.runPromise(Effect.gen(function* () {
+ *   const aggregated = yield* Stream.runCollect(
+ *     Stream.make(1, 2, 3, 4, 5, 6).pipe(
+ *       Stream.aggregateWithin(
+ *         Sink.foldUntil(() => 0, 3, (sum, n) => sum + n),
+ *         Schedule.spaced("1 minute")
+ *       )
+ *     )
+ *   )
+ *   yield* Console.log(aggregated)
+ * }))
+ * // Output: [ 6, 15 ]
+ * ```
+ *
  * @since 2.0.0
  * @category Aggregation
  */
