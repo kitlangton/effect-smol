@@ -4989,8 +4989,30 @@ export const combineArray: {
   )))
 
 /**
+ * Statefully maps elements, emitting zero or more outputs per input.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const totals = yield* Stream.make(0, 1, 2, 3, 4, 5, 6).pipe(
+ *     Stream.mapAccum(() => 0, (total, n) => {
+ *       const next = total + n
+ *       return [next, [next]] as const
+ *     }),
+ *     Stream.runCollect
+ *   )
+ *
+ *   yield* Console.log(totals)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 0, 1, 3, 6, 10, 15, 21 ]
+ * ```
+ *
  * @since 2.0.0
- * @category sequencing
+ * @category Mapping
  */
 export const mapAccum: {
   <S, A, B>(
