@@ -3673,7 +3673,9 @@ export const bufferArray: {
 ): Stream<A, E, R> => fromChannel(Channel.buffer(self.channel, options)))
 
 /**
- * Handles stream failures by examining the full Cause of failure.
+ * Switches over to the stream produced by the provided function in case this
+ * one fails. Allows recovery from all causes of failure, including
+ * interruption if the stream is uninterruptible.
  *
  * **Previously Known As**
  *
@@ -3683,23 +3685,28 @@ export const bufferArray: {
  *
  * @example
  * ```ts
- * import { Effect, Stream } from "effect"
+ * import { Console, Effect, Stream } from "effect"
  *
- * const failingStream = Stream.make(1, 2).pipe(
+ * const stream = Stream.make(1, 2).pipe(
  *   Stream.concat(Stream.fail("Oops!")),
  *   Stream.concat(Stream.make(3, 4))
  * )
  *
- * const recovered = Stream.catchCause(failingStream, (cause) => {
- *   console.log("Caught cause:", cause)
- *   return Stream.make(999) // Recovery stream
+ * const recovered = stream.pipe(
+ *   Stream.catchCause(() => Stream.make(999))
+ * )
+ *
+ * const program = Effect.gen(function*() {
+ *   const values = yield* Stream.runCollect(recovered)
+ *   yield* Console.log(values)
  * })
  *
- * Effect.runPromise(Stream.runCollect(recovered)).then(console.log)
+ * Effect.runPromise(program)
+ * // Output: [ 1, 2, 999 ]
  * ```
  *
  * @since 4.0.0
- * @category Error handling
+ * @category Error Handling
  */
 export const catchCause: {
   <E, A2, E2, R2>(
