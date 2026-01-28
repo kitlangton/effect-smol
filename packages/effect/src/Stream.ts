@@ -3350,6 +3350,33 @@ export const partitionFilter: {
 )
 
 /**
+ * Partitions a stream using a Filter and exposes passing and failing values as queues.
+ *
+ * Each queue fails with the stream error or `Cause.Done` when the source ends.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Filter, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const [passes, fails] = yield* Stream.make(1, 2, 3, 4).pipe(
+ *     Stream.partitionFilterQueue(
+ *       Filter.make((n) => (n % 2 === 0 ? n : Filter.fail(n)))
+ *     )
+ *   )
+ *
+ *   const passValues = yield* Stream.fromQueue(passes).pipe(Stream.runCollect)
+ *   const failValues = yield* Stream.fromQueue(fails).pipe(Stream.runCollect)
+ *
+ *   yield* Console.log(passValues)
+ *   // Output: [ 2, 4 ]
+ *   yield* Console.log(failValues)
+ *   // Output: [ 1, 3 ]
+ * })
+ *
+ * Effect.runPromise(Effect.scoped(program))
+ * ```
+ *
  * @since 4.0.0
  * @category Filtering
  */
