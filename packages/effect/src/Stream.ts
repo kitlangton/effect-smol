@@ -4604,11 +4604,26 @@ export const dropWhile: {
     })))
 
 /**
- * Drops all elements of the stream for as long as the specified predicate
- * produces an effect that evalutates to `true`
+ * Drops elements while the specified effectful predicate evaluates to `true`.
+ *
+ * @example
+ * ```ts
+ * import { Console, Effect, Stream } from "effect"
+ *
+ * const program = Effect.gen(function*() {
+ *   const result = yield* Stream.make(1, 2, 3, 4, 5).pipe(
+ *     Stream.dropWhileEffect((n) => Effect.succeed(n < 3)),
+ *     Stream.runCollect
+ *   )
+ *   yield* Console.log(result)
+ * })
+ *
+ * Effect.runPromise(program)
+ * // Output: [ 3, 4, 5 ]
+ * ```
  *
  * @since 2.0.0
- * @category utils
+ * @category Filtering
  */
 export const dropWhileEffect: {
   <A, E2, R2>(
