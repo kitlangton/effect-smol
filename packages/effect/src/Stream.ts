@@ -296,7 +296,6 @@ export type HaltStrategy = Channel.HaltStrategy
  *   yield* Console.log(Array.from(result))
  * })
  *
- * Effect.runPromise(program)
  * // Output: [ 1, 2, 3 ]
  * ```
  *
